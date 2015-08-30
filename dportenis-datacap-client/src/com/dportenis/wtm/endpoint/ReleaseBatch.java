@@ -1,38 +1,35 @@
 package com.dportenis.wtm.endpoint;
 
-import java.io.IOException;
- 
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.ClientProtocolException;
+import org.apache.commons.io.IOUtils;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPut;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
+import org.apache.http.client.HttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 
 public class ReleaseBatch {
 	
-	public static void sendRequest(String url) throws ClientProtocolException, IOException {
-		
+	public static void sendRequest(String url, boolean debug) throws Exception {
+	
 		// create HTTP Client
-		CloseableHttpClient httpClient = HttpClients.createDefault();		
+		HttpClient httpClient = HttpClientBuilder.create().build();				
 		
-		try {
-			
-			// Create HTTP Request
-			HttpPut request = new HttpPut(url);
+		// Create HTTP Request
+		HttpPut request = new HttpPut(url);
 	
-			// Execute your request and catch response
-	        CloseableHttpResponse response = httpClient.execute(request);
+		// Execute your request and catch response
+		HttpResponse response = httpClient.execute(request);
 	
-			// Check for HTTP response code: 200 = success
-			if (response.getStatusLine().getStatusCode() != 200)
-				throw new RuntimeException("HTTP error. " + response.getStatusLine().getStatusCode() + ". " + response.getStatusLine().getReasonPhrase());
-			
-			// Response Close
-			response.close();			
-		
-        } finally {
-        	httpClient.close();
-        }
+        // Get string response
+        HttpEntity resEntity = response.getEntity();
+        String input = IOUtils.toString(resEntity.getContent());
+        
+		if (debug)
+            System.out.println("Response: " + input);
+
+		// Check for HTTP response code
+		if (response.getStatusLine().getStatusCode() != 200 && response.getStatusLine().getStatusCode() != 201)
+			throw new RuntimeException("HTTP error " + response.getStatusLine().getStatusCode() + ". " + response.getStatusLine().getReasonPhrase());	
 		
 	}
 

@@ -3,17 +3,17 @@ package com.dportenis.wtm.bean;
 import java.util.Map;
 import java.util.HashMap;
 
-public class Batch {
+public class BatchAttributes {
 	
 	private String batchId;
 	private String batchdir;
-	private int queueId;
-	private int priority;
+	private int queueId = -1;
+	private int priority = -1;
 	private String job;
 	private String status;
 	private String task;
 	private String operatorName;
-	private int station;
+	private String station;
 	private Map<String,String> xtraBatchFields = new HashMap<String,String>();
 	
 	public String getOperatorName() {
@@ -22,10 +22,10 @@ public class Batch {
 	public void setOperatorName(String operatorName) {
 		this.operatorName = operatorName;
 	}
-	public int getStation() {
+	public String getStation() {
 		return station;
 	}
-	public void setStation(int station) {
+	public void setStation(String station) {
 		this.station = station;
 	}	
 	public Map<String, String> getXtraBatchFields() {

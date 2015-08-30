@@ -1,7 +1,16 @@
 package com.deportenis.handler.test;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileInputStream;
+import java.io.OutputStream;
+import java.io.InputStream;
+
 import javax.security.auth.Subject;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -15,7 +24,6 @@ import com.filenet.api.core.ObjectStore;
 import com.filenet.api.util.UserContext;
 
 import com.dportenis.handler.ProcesaIFE;
-import com.dportenis.wtm.bean.Batch;
 
 public class TestProcesaIFE {
 
@@ -50,26 +58,56 @@ public class TestProcesaIFE {
 	@Test
 	public void testProcesaIFE() {
 		
-		String objectId = "{079E8C75-B3F0-408D-A30F-7C16AD5A5E95}";
+		String objectId = "{CE4C1EFB-16E1-4C01-AD0A-2D5317EEFEC4}";
+		String settingsFile = "/Users/juansaad/git/Emergys/dportenis-event-handler/settings/dpsettings.properties";
+        File tmpFile = null;
+        OutputStream out = null;
+        InputStream in = null;
 		
 		try
 		{
-	        // Load Settings
-	        Document settings = Factory.Document.fetchInstance(os, DPSettings.DOC_PATH, null);
+			ProcesaIFE procesaIFE = new ProcesaIFE();
+			
+	        // Load settings
+	        in = new FileInputStream(new File(settingsFile)); 
 	        java.util.Properties props = new java.util.Properties();
-	        ContentTransfer ct = ProcesaIFE.getContentTransfer(settings);
-	        props.load(ct.accessContentStream());
-	        
-	        // Procesa IFE
+	        props.load(in);
+	        procesaIFE.setProps(props);
+			IOUtils.closeQuietly(in);
+			if (procesaIFE.isDebug())
+				System.out.println("Archivo de settings cargado");			
+			
+			// Get document
+			if (procesaIFE.isDebug())		
+				System.out.println("Obteniendo documento origen...");
 	        Document doc = Factory.Document.fetchInstance(os, objectId, null);
-	        Batch batch = ProcesaIFE.doProcesaIFE(doc, props);
+			if (procesaIFE.isDebug())        
+				System.out.println("Documento a procesar con Id " + doc.get_Id().toString());			
 	        
-	        System.out.println("El nuevo batch " + batch.getBatchId() + " fue creado para procesar IFE con Id " + doc.get_Id().toString());
+	        // Create temporary file to be uploaded
+			if (procesaIFE.isDebug())		
+				System.out.println("Generando archivo temporal...");
+	        ContentTransfer ct = procesaIFE.getContentTransfer(doc);
+			tmpFile = new File(props.getProperty(DPSettings.PROPS_DC_SCRATCH) + File.separator + ProcesaIFE.getTimeStamp() + "." + FilenameUtils.getExtension(ct.get_RetrievalName()));
+			out = new FileOutputStream(tmpFile);
+			IOUtils.copy(ct.accessContentStream(), out);
+			IOUtils.closeQuietly(out);
+			if (!tmpFile.exists())
+				throw new RuntimeException("El archivo temporal no pudo ser generado: " + tmpFile.getAbsoluteFile());
+			if (procesaIFE.isDebug())
+				System.out.println("Archivo temporal generado: " + tmpFile.getAbsoluteFile());        
+				      
+	        // Procesa IFE
+			procesaIFE.doProcesaIFE(doc.get_Id().toString(), tmpFile);
+	        
 		}
 		catch (Exception e)
 		{
 			e.printStackTrace();
 		}
+		finally {    
+			FileUtils.deleteQuietly(tmpFile);
+		}	
 	}
 
 }

@@ -5,15 +5,23 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
+import org.xml.sax.InputSource;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.ParserConfigurationException;
-import java.io.InputStream;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.io.IOException;
 import java.util.Map;
 import java.util.HashMap;
 
-public class Response {
+public class BatchResponse {
 	
 	private static final String NODE_EXCEPTION_BODY = "ExceptionBody";
 	private static final String NODE_EXCEPTION_MESSAGE = "message";
@@ -38,13 +46,15 @@ public class Response {
 	private Document document;
 	//private Element root;
 	
-	public Response(InputStream input) throws ParserConfigurationException, SAXException, IOException {
+	public BatchResponse(String input) throws ParserConfigurationException, SAXException, IOException {
 		//Get Document Builder
 		factory = DocumentBuilderFactory.newInstance();
 		builder = factory.newDocumentBuilder();	
 		
 		//Build Document
-		document = builder.parse(input);
+	    InputSource is = new InputSource();
+	    is.setCharacterStream(new StringReader(input));
+		document = builder.parse(is);
 		 
 		//Normalize the XML Structure; It's just too important !!
 		document.getDocumentElement().normalize();
@@ -64,54 +74,53 @@ public class Response {
 	}
 	
 	public String getBatchId() {
-		return getNodeTextContent(NODE_BATCHID);
+		return getNodeTextContent(null, NODE_BATCHID);
 	}
 	
 	public String getBatchDir() {
-		return getNodeTextContent(NODE_BATCHDIR);
+		return getNodeTextContent(null, NODE_BATCHDIR);
 	}	
 	
 	public int getQueueId() {
-		String value = getNodeTextContent(NODE_QUEUEID);
+		String value = getNodeTextContent(null, NODE_QUEUEID);
 		return (!value.isEmpty() ? Integer.parseInt(value) : -1);
 	}	
 	
 	public int getPriority() {
-		String value = getNodeTextContent(NODE_PRIORITY);
+		String value = getNodeTextContent(null, NODE_PRIORITY);
 		return (!value.isEmpty() ? Integer.parseInt(value) : -1);
 	}
 	
 	public String getBatchStatus() {
-		return getNodeTextContent(NODE_BATCHSTATUS);
+		return getNodeTextContent(null, NODE_BATCHSTATUS);
 	}	
 	
 	public String getTask() {
-		return getNodeTextContent(NODE_TASK);
+		return getNodeTextContent(null, NODE_TASK);
 	}
 	
 	public String getJob() {
-		return getNodeTextContent(NODE_JOB);
+		return getNodeTextContent(null, NODE_JOB);
 	}		
 	
 	public String getOriginalFileName() {
-		return getNodeTextContent(NODE_ORIGINAL_FILENAME);
+		return getNodeTextContent(null, NODE_ORIGINAL_FILENAME);
 	}
 	
 	public String getPageId() {
-		return getNodeTextContent(NODE_PAGEID);
+		return getNodeTextContent(null, NODE_PAGEID);
 	}
 	
 	public String getOperatorName() {
-		return getNodeTextContent(NODE_OPERATORNAME);
+		return getNodeTextContent(null, NODE_OPERATORNAME);
 	}
 	
-	public int getStation() {
-		String value = getNodeTextContent(NODE_STATION);
-		return (!value.isEmpty() ? Integer.parseInt(value) : -1);
+	public String getStation() {
+		return getNodeTextContent(null, NODE_STATION);
 	}
 	
 	public int getReturnCode() {
-		String value = getNodeTextContent(NODE_RETURNCODE);
+		String value = getNodeTextContent(null, NODE_RETURNCODE);
 		return (!value.isEmpty() ? Integer.parseInt(value) : -1);
 	}		
 	
@@ -130,8 +139,17 @@ public class Response {
 		return xtraBatchFields;
 	}
 	
-	private String getNodeTextContent(String nodename) {
-		NodeList nList = document.getElementsByTagName(nodename);
+	private String getNodeTextContent(Element element, String nodename) {
+		Element eElement = getFirstElementNode(element, nodename);
+		return eElement.getTextContent();		
+	}
+	
+	private Element getFirstElementNode(Element element, String nodename) {
+		NodeList nList;
+		if (element == null)
+			nList = document.getElementsByTagName(nodename);
+		else
+			nList = element.getElementsByTagName(nodename);
 		if (nList.getLength() == 0)
 			return null;
 		
@@ -139,8 +157,27 @@ public class Response {
 		if (node.getNodeType() != Node.ELEMENT_NODE)
 			return null;
 		
-		Element eElement = (Element) node;
-		return eElement.getTextContent();		
-	}
+		Element eElement = (Element) node;	
+		return eElement;
+	}		
+	
+	public String toString() {
+		String output = "";
+		try
+		{
+			TransformerFactory tf = TransformerFactory.newInstance();
+			Transformer transformer = tf.newTransformer();
+			transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+			StringWriter writer = new StringWriter();
+			transformer.transform(new DOMSource(document), new StreamResult(writer));
+			output = writer.getBuffer().toString().replaceAll("\n|\r", "");
+			
+		} 
+		catch (Exception e) 
+		{
+			e.printStackTrace();
+		}
+		return output;
+	}	
 
 }
