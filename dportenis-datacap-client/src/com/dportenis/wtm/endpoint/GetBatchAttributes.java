@@ -5,6 +5,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.util.EntityUtils;
 import org.apache.http.impl.client.HttpClientBuilder;
 
@@ -13,13 +14,22 @@ import com.dportenis.wtm.bean.BatchAttributes;
 
 public class GetBatchAttributes {
 	
-	public static BatchAttributes sendRequest(String url, boolean debug) throws Exception {
+	protected int timeout = 10000; // default to 10 secs
+	
+	public void setTimeout(int timeout) {
+		this.timeout = timeout;
+	}
+	
+	public BatchAttributes sendRequest(String url, boolean debug) throws Exception {
 		
 		// Response Batch Attributes
 		BatchAttributes bean = new BatchAttributes();
 		
-		// create HTTP Client
-		HttpClient httpClient = HttpClientBuilder.create().build();			
+		// Create HTTP Client
+		RequestConfig config = RequestConfig.custom()
+				.setConnectTimeout(timeout)
+				.setSocketTimeout(timeout).build();		
+		HttpClient httpClient = HttpClientBuilder.create().setDefaultRequestConfig(config).build();		
 		
 		// Create HTTP Request
 		HttpGet request = new HttpGet(url);

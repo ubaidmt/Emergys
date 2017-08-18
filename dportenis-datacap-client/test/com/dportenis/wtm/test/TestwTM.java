@@ -27,9 +27,9 @@ import com.dportenis.wtm.endpoint.SaveBatchAttribute;
 
 public class TestwTM {
 	
-	private static final String URL_CONTEXT = "http://192.168.185.174:90/ServicewTM.svc";
-	private static final String APP_NAME = "Dportenis";
-	private static final String JOB_NAME = "Mobile Job";
+	private static final String URL_CONTEXT = "http://192.168.185.132:90/ServicewTM.svc";
+	private static final String APP_NAME = "POC";
+	private static final String JOB_NAME = "Demo";
 	private int QUEUEID = 1013;
 	
 	private Log log = LogFactory.getLog(TestwTM.class);
@@ -54,7 +54,8 @@ public class TestwTM {
 		
 		try {	
 			
-			BatchAttributes batch = CreateBatch.sendRequest(service, payload.toString(), true);
+			CreateBatch createBatch = new CreateBatch();
+			BatchAttributes batch = createBatch.sendRequest(service, payload.toString(), true);
 			
 			if (batch.getQueueId() == -1)
 				throw new RuntimeException("El batch no pudo ser creado");
@@ -76,7 +77,8 @@ public class TestwTM {
 		
 		try {
 			
-			BatchAttributes batch = GetBatchAttributes.sendRequest(service, true);
+			GetBatchAttributes getBatch = new GetBatchAttributes();
+			BatchAttributes batch = getBatch.sendRequest(service, true);
 
 			if (batch.getQueueId() == -1)
 				throw new RuntimeException("Error al leer los atributos del batch");
@@ -105,7 +107,8 @@ public class TestwTM {
 		
 		try {
 			
-			BatchDCO batchDCO = GetPageFile.sendRequest(service, true);
+			GetPageFile getPageFile = new GetPageFile();
+			BatchDCO batchDCO = getPageFile.sendRequest(service, true);
 
 			if (batchDCO.getId().isEmpty())
 				throw new RuntimeException("Error al leer el pagefile del batch");
@@ -134,7 +137,8 @@ public class TestwTM {
 		try {
 
 			String service = URL_CONTEXT + "/Queue/GetBatchAttributes/" + APP_NAME + "/" + QUEUEID;
-			BatchAttributes batch = GetBatchAttributes.sendRequest(service, true);
+			GetBatchAttributes getBatch = new GetBatchAttributes();
+			BatchAttributes batch = getBatch.sendRequest(service, true);
 
 			if (batch.getQueueId() == -1)
 				throw new RuntimeException("Error al leer los atributos del batch");
@@ -143,7 +147,7 @@ public class TestwTM {
 			payload.append("<BatchAttrSave>");
 			payload.append("<batchDir>" + batch.getBatchdir() + "</batchDir>");
 			payload.append("<operationUser>admin</operationUser>"); 
-			payload.append("<pageFile>MobileScan.xml</pageFile>");
+			payload.append("<pageFile>VScan.xml</pageFile>");
 			payload.append("<queueID>" + batch.getQueueId() + "</queueID>");
 			payload.append("<station>1</station>"); 
 			payload.append("<xtraBatchFields>"); 
@@ -155,7 +159,8 @@ public class TestwTM {
 			payload.append("</BatchAttrSave>");		
 		
 			service = URL_CONTEXT + "/Queue/SaveBatchAttribute/" + APP_NAME;
-			int returnCode = SaveBatchAttribute.sendRequest(service, payload.toString(), true);
+			SaveBatchAttribute saveBatch = new SaveBatchAttribute();
+			int returnCode = saveBatch.sendRequest(service, payload.toString(), true);
 
 			if (returnCode != 0)
 				throw new RuntimeException("Error al salvar los atributos del batch");
@@ -179,7 +184,8 @@ public class TestwTM {
 			File tmpFile = File.createTempFile("tmp", ".jpg");
 			out = new FileOutputStream(tmpFile);
 			IOUtils.copy(new FileInputStream(new File(fileToUpload)), out);
-			Upload upload = UploadFile.sendRequest(service, tmpFile, true);
+			UploadFile uploadFile = new UploadFile();
+			Upload upload = uploadFile.sendRequest(service, tmpFile, true);
 			tmpFile.deleteOnExit();
 			
 			if (!tmpFile.getName().equals(upload.getOriginalFileName()))
@@ -204,19 +210,13 @@ public class TestwTM {
 		
 		try {
 			
-			ReleaseBatch.sendRequest(service, true);
+			ReleaseBatch releaseBatch = new ReleaseBatch();
+			releaseBatch.sendRequest(service, true);
 			log.debug("Batch Liberado");		
 			
 		} catch (Exception e) {
 			log.error(e);
 		}
-	}
-	
-	@Test
-	public void testFullTransactionBatch() {
-		int numBatches = 10;
-		for (int i = 1; i < numBatches; i++)
-			testFullTransaction();
 	}
 	
 	@Test
@@ -230,24 +230,29 @@ public class TestwTM {
 		
 		try {	
 
-			service = URL_CONTEXT + "/Queue/CreateBatch";
+			// create batch
 			payload = new StringBuffer();
 			payload.append("<createBatchAttributes>");
 			payload.append("<application>" + APP_NAME + "</application>");
 			payload.append("<job>" + JOB_NAME + "</job>");
 			payload.append("</createBatchAttributes>");
-			batch = CreateBatch.sendRequest(service, payload.toString(), true);
+			
+			service = URL_CONTEXT + "/Queue/CreateBatch";			
+			CreateBatch createBatch = new CreateBatch();
+			batch = createBatch.sendRequest(service, payload.toString(), true);
 			
 			if (batch.getQueueId() == -1)
 				throw new RuntimeException("El batch no pudo ser creado");
 			
+			// get batch identifier
 			queueId = batch.getQueueId();
 
+			// save batch
 			payload = new StringBuffer();
 			payload.append("<BatchAttrSave>");
 			payload.append("<batchDir>" + batch.getBatchdir() + "</batchDir>");
 			payload.append("<operationUser>admin</operationUser>"); 
-			payload.append("<pageFile>MobileScan.xml</pageFile>");
+			payload.append("<pageFile>VScan.xml</pageFile>");
 			payload.append("<queueID>" + queueId + "</queueID>");
 			payload.append("<station>1</station>"); 
 			payload.append("<xtraBatchFields>"); 
@@ -259,25 +264,31 @@ public class TestwTM {
 			payload.append("</BatchAttrSave>");		
 		
 			service = URL_CONTEXT + "/Queue/SaveBatchAttribute/" + APP_NAME;
-			int returnCode = SaveBatchAttribute.sendRequest(service, payload.toString(), true);
+			SaveBatchAttribute saveBatch = new SaveBatchAttribute();
+			int returnCode = saveBatch.sendRequest(service, payload.toString(), true);
 
 			if (returnCode != 0)
 				throw new RuntimeException("Error al salvar los atributos del batch");	
 			
-			String fileToUpload = "/Users/juansaad/Downloads/ife0.jpg";
+			// upload file
+			String fileToUpload = "/Users/juansaad/Downloads/Orden de Compra 0051.pdf";
 			File scratch = new File("/Users/juansaad/Downloads");
-			File tmpFile = File.createTempFile("tmp", ".jpg", (scratch.exists() && scratch.isDirectory() ? scratch : null));
+			File tmpFile = File.createTempFile("tmp", ".pdf", (scratch.exists() && scratch.isDirectory() ? scratch : null));
 			tmpFile.deleteOnExit();
 			out = new FileOutputStream(tmpFile);
 			IOUtils.copy(new FileInputStream(new File(fileToUpload)), out);
+			
 			service = URL_CONTEXT + "/Queue/UploadFile/" + APP_NAME + "/" + queueId;
-			Upload upload = UploadFile.sendRequest(service, tmpFile, true);
+			UploadFile uploadFile = new UploadFile();
+			Upload upload = uploadFile.sendRequest(service, tmpFile, true);
 			
 			if (!tmpFile.getName().equals(upload.getOriginalFileName()))
 				throw new RuntimeException("El archivo " + fileToUpload + " no puedo ser enviado");		
 			
+			// release batch
 			service = URL_CONTEXT + "/Queue/ReleaseBatch/" + APP_NAME + "/" + queueId + "/finished";
-			ReleaseBatch.sendRequest(service, true);
+			ReleaseBatch releaseBatch = new ReleaseBatch();
+			releaseBatch.sendRequest(service, true);
 
 			log.debug("Batch Procesado");			
 			

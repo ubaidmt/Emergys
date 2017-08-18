@@ -5,14 +5,24 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.impl.client.HttpClientBuilder;
 
 public class ReleaseBatch {
 	
-	public static void sendRequest(String url, boolean debug) throws Exception {
+	protected int timeout = 10000; // default to 10 secs
 	
-		// create HTTP Client
-		HttpClient httpClient = HttpClientBuilder.create().build();				
+	public void setTimeout(int timeout) {
+		this.timeout = timeout;
+	}
+	
+	public void sendRequest(String url, boolean debug) throws Exception {
+	
+		// Create HTTP Client
+		RequestConfig config = RequestConfig.custom()
+				.setConnectTimeout(timeout)
+				.setSocketTimeout(timeout).build();		
+		HttpClient httpClient = HttpClientBuilder.create().setDefaultRequestConfig(config).build();			
 		
 		// Create HTTP Request
 		HttpPut request = new HttpPut(url);

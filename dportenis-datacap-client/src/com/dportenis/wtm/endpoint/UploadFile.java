@@ -9,6 +9,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.util.EntityUtils;
 import org.apache.http.impl.client.HttpClientBuilder;
 
@@ -17,13 +18,22 @@ import com.dportenis.wtm.bean.Upload;
 
 public class UploadFile {
 	
-	public static Upload sendRequest(String url, File file, boolean debug)  throws Exception {
+	protected int timeout = 10000; // default to 10 secs
+	
+	public void setTimeout(int timeout) {
+		this.timeout = timeout;
+	}	
+	
+	public Upload sendRequest(String url, File file, boolean debug)  throws Exception {
 		
 		// Response File Upload Attributes
 		Upload bean = new Upload();		
 		
-		// create HTTP Client
-		HttpClient httpClient = HttpClientBuilder.create().build();			
+		// Create HTTP Client
+		RequestConfig config = RequestConfig.custom()
+				.setConnectTimeout(timeout)
+				.setSocketTimeout(timeout).build();		
+		HttpClient httpClient = HttpClientBuilder.create().setDefaultRequestConfig(config).build();		
 		
 		// Create HTTP Request
 		HttpPost request = new HttpPost(url);

@@ -130,8 +130,9 @@ public class ProcesaIFE implements EventActionHandler {
 			{
 				service = props.getProperty(DPSettings.PROPS_WTM_CONTEXT) + "/Queue/CreateBatch";
 				if (isDebug())	        
-					System.out.println("Service: " + service); 
-				batch = CreateBatch.sendRequest(service, payload.toString(), isDebug());		
+					System.out.println("Service: " + service);
+				CreateBatch createBatch = new CreateBatch();
+				batch = createBatch.sendRequest(service, payload.toString(), isDebug());		
 				if (batch.getQueueId() == -1)
 					throw new RuntimeException("Error al crear el batch, queueId invalido");
 				
@@ -186,7 +187,8 @@ public class ProcesaIFE implements EventActionHandler {
 				service = props.getProperty(DPSettings.PROPS_WTM_CONTEXT) + "/Queue/SaveBatchAttribute/" + props.getProperty(DPSettings.PROPS_DC_APP);
 				if (isDebug())
 					System.out.println("Service: " + service);
-				int returnCode = SaveBatchAttribute.sendRequest(service, payload.toString(), isDebug());
+				SaveBatchAttribute saveBatch = new SaveBatchAttribute();
+				int returnCode = saveBatch.sendRequest(service, payload.toString(), isDebug());
 		
 				if (returnCode != 0)
 					throw new RuntimeException("Error al guardar los atributos del batch. Codigo de error " + returnCode);
@@ -198,7 +200,8 @@ public class ProcesaIFE implements EventActionHandler {
 				service = props.getProperty(DPSettings.PROPS_WTM_CONTEXT) + "/Queue/GetBatchAttributes/" + props.getProperty(DPSettings.PROPS_DC_APP) + "/" + queueId;
 				if (isDebug())
 					System.out.println("Service: " + service);
-				batch = GetBatchAttributes.sendRequest(service, isDebug());
+				GetBatchAttributes getBatch = new GetBatchAttributes();
+				batch = getBatch.sendRequest(service, isDebug());
 		
 				if (batch.getQueueId() == -1)
 					throw new RuntimeException("Error al leer los atributos del batch, queueId invalido");
@@ -238,7 +241,8 @@ public class ProcesaIFE implements EventActionHandler {
 				service = props.getProperty(DPSettings.PROPS_WTM_CONTEXT) + "/Queue/UploadFile/" + props.getProperty(DPSettings.PROPS_DC_APP) + "/" + queueId;
 				if (isDebug())
 					System.out.println("Service: " + service);
-				Upload upload = UploadFile.sendRequest(service, tmpFile, isDebug());
+				UploadFile upladFile = new UploadFile();
+				Upload upload = upladFile.sendRequest(service, tmpFile, isDebug());
 				
 				if (!tmpFile.getName().equals(upload.getOriginalFileName()))
 					throw new RuntimeException("No se completo el upload de la imagen en el batch");
@@ -250,7 +254,8 @@ public class ProcesaIFE implements EventActionHandler {
 				service = props.getProperty(DPSettings.PROPS_WTM_CONTEXT) + "/Queue/GetPageFile/" + props.getProperty(DPSettings.PROPS_DC_APP) + "/" + queueId;
 				if (isDebug())
 					System.out.println("Service: " + service);
-				BatchDCO batchDCO = GetPageFile.sendRequest(service, isDebug());
+				GetPageFile getPageFile = new GetPageFile();
+				BatchDCO batchDCO = getPageFile.sendRequest(service, isDebug());
 				
 				if (batchDCO.getId().isEmpty())
 					throw new RuntimeException("Error al leer el pagefile del batch");
@@ -290,7 +295,8 @@ public class ProcesaIFE implements EventActionHandler {
 				service = props.getProperty(DPSettings.PROPS_WTM_CONTEXT) + "/Queue/ReleaseBatch/" + props.getProperty(DPSettings.PROPS_DC_APP) + "/" + queueId + "/finished";
 				if (isDebug())
 					System.out.println("Service: " + service);
-				ReleaseBatch.sendRequest(service, isDebug());	
+				ReleaseBatch releaseBatch = new ReleaseBatch();
+				releaseBatch.sendRequest(service, isDebug());	
 				
 				// Validate Batch Release
 				if (isDebug())
@@ -299,7 +305,8 @@ public class ProcesaIFE implements EventActionHandler {
 				service = props.getProperty(DPSettings.PROPS_WTM_CONTEXT) + "/Queue/GetBatchAttributes/" + props.getProperty(DPSettings.PROPS_DC_APP) + "/" + queueId;
 				if (isDebug())
 					System.out.println("Service: " + service);
-				batch = GetBatchAttributes.sendRequest(service, isDebug());
+				GetBatchAttributes getBatch = new GetBatchAttributes();
+				batch = getBatch.sendRequest(service, isDebug());
 		
 				if (batch.getQueueId() == -1)
 					throw new RuntimeException("Error al leer los atributos del batch, queueId invalido");
