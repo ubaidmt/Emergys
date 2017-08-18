@@ -254,13 +254,7 @@ public class TestwTM {
 			payload.append("<operationUser>admin</operationUser>"); 
 			payload.append("<pageFile>VScan.xml</pageFile>");
 			payload.append("<queueID>" + queueId + "</queueID>");
-			payload.append("<station>1</station>"); 
-			payload.append("<xtraBatchFields>"); 
-			payload.append("<Count>1</Count>"); 
-			payload.append("<Fields>");
-			payload.append("<XtraBatchField><field>pb_IFEDocID</field><value>ABCD</value></XtraBatchField>"); 
-			payload.append("</Fields>");
-			payload.append("</xtraBatchFields>"); 
+			payload.append("<station>1</station>");  
 			payload.append("</BatchAttrSave>");		
 		
 			service = URL_CONTEXT + "/Queue/SaveBatchAttribute/" + APP_NAME;
