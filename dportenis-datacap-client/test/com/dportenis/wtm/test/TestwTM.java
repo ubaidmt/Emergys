@@ -27,10 +27,10 @@ import com.dportenis.wtm.endpoint.SaveBatchAttribute;
 
 public class TestwTM {
 	
-	private static final String URL_CONTEXT = "http://192.168.185.132:90/ServicewTM.svc";
+	private static final String URL_CONTEXT = "http://192.168.185.130:90/ServicewTM.svc";
 	private static final String APP_NAME = "POC";
 	private static final String JOB_NAME = "Demo";
-	private int QUEUEID = 1013;
+	private int QUEUEID = 47;
 	
 	private Log log = LogFactory.getLog(TestwTM.class);
 
@@ -255,6 +255,7 @@ public class TestwTM {
 			payload.append("<pageFile>VScan.xml</pageFile>");
 			payload.append("<queueID>" + queueId + "</queueID>");
 			payload.append("<station>1</station>");  
+			payload.append("<xtraBatchFields></xtraBatchFields>"); 		
 			payload.append("</BatchAttrSave>");		
 		
 			service = URL_CONTEXT + "/Queue/SaveBatchAttribute/" + APP_NAME;
