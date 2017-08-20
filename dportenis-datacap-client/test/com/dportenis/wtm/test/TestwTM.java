@@ -27,7 +27,7 @@ import com.dportenis.wtm.endpoint.SaveBatchAttribute;
 
 public class TestwTM {
 	
-	private static final String URL_CONTEXT = "http://192.168.185.130:90/ServicewTM.svc";
+	private static final String URL_CONTEXT = "http://169.60.14.123:8070/ServicewTM.svc";
 	private static final String APP_NAME = "POC";
 	private static final String JOB_NAME = "Demo";
 	private int QUEUEID = 47;
@@ -222,6 +222,8 @@ public class TestwTM {
 	@Test
 	public void testFullTransaction() {
 		
+		String fileToUpload = "/Users/juansaad/Downloads/Orden de Compra 0051.pdf";
+		
 		String service;
 		BatchAttributes batch;
 		StringBuffer payload;
@@ -266,7 +268,6 @@ public class TestwTM {
 				throw new RuntimeException("Error al salvar los atributos del batch");	
 			
 			// upload file
-			String fileToUpload = "/Users/juansaad/Downloads/Orden de Compra 0051.pdf";
 			File scratch = new File("/Users/juansaad/Downloads");
 			File tmpFile = File.createTempFile("tmp", ".pdf", (scratch.exists() && scratch.isDirectory() ? scratch : null));
 			tmpFile.deleteOnExit();
